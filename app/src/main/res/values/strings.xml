@@ -1,4 +1,6 @@
 <resources>
     <string name="app_name">SortingChaos</string>
     <string name="action_settings">Settings</string>
+    <string name="menu_reset">Reset</string>
+    <string name="menu_stop">Stop</string>
 </resources>
