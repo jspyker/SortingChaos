@@ -144,11 +144,11 @@ class SortingChaosView extends SurfaceView implements SurfaceHolder.Callback {
         public void setSurfaceSize(int width, int height) {
             // synchronized to make sure these all change atomically
             synchronized (syncObject) {
-                mCanvasWidth = width;
-//                if (mCanvasWidth > 400)
-//                {
-//                	mCanvasWidth = 400;
-//                }
+                mCanvasWidth = (width-1)/2;
+                if (mCanvasWidth > 4000)
+                {
+                	mCanvasWidth = 4000;
+                }
                 mCanvasHeight = height;
                 resetSort();
             }
@@ -182,11 +182,11 @@ class SortingChaosView extends SurfaceView implements SurfaceHolder.Callback {
         	
         	if (madeOwnCanvas)
         	{
-        		Rect littleRect = new Rect(pos1,0,pos1+1,mCanvasHeight);
-        		useCanvas = mSurfaceHolder.lockCanvas(littleRect);
+        		Rect littleRect = new Rect(2*pos1,0,2*pos1+1,mCanvasHeight);
+                useCanvas = mSurfaceHolder.lockCanvas(littleRect);
         		if (useCanvas != null)
         		{
-        			useCanvas.drawRect(littleRect,backgroundPaint);
+//        			useCanvas.drawRect(littleRect,backgroundPaint);
         		}
         	}
         	else
@@ -200,11 +200,13 @@ class SortingChaosView extends SurfaceView implements SurfaceHolder.Callback {
         		int i1 = mCanvasHeight/2;
         		int i2 = values[pos1]/2;
 
-        		useCanvas.drawLine(pos1,  values[pos1], pos1, 0,foregroundPaint);
-        		useCanvas.drawLine(pos1,  mCanvasHeight, pos1, values[pos1],backgroundPaint);
-//        		useCanvas.drawLine(pos1,  i1, pos1, 0,foregroundPaint);
-//        		useCanvas.drawLine(pos1,  i1, pos1, i2,backgroundPaint);
-        	}
+//                useCanvas.drawLine(pos1,  values[pos1], pos1, 0,foregroundPaint);
+//                useCanvas.drawLine(pos1,  mCanvasHeight, pos1, values[pos1],backgroundPaint);
+                Rect bottomRect = new Rect(2*pos1,0,2*pos1+1,values[pos1]);
+                useCanvas.drawRect(bottomRect,backgroundPaint);
+                Rect topRect = new Rect(2*pos1,values[pos1],2*pos1+1,mCanvasHeight);
+                useCanvas.drawRect(topRect,foregroundPaint);
+            }
 
         	if (madeOwnCanvas && useCanvas != null)
         	{
