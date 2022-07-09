@@ -92,34 +92,20 @@ class SortingChaosView extends SurfaceView implements SurfaceHolder.Callback {
 
                     	if (justReset)
                     	{
-                    		// Don't understand why, but on my phone it is crucial to do a bit of drawing
-                    		// first or else the first background doesn't work
-                            /*
                     		c = mSurfaceHolder.lockCanvas();
-                    		Rect littleRect = new Rect(0,0,mCanvasWidth,mCanvasHeight);
-                    		Paint tmpPaint = new Paint();
-                    		tmpPaint.setColor(Color.BLACK);
-                    		c.drawRect(littleRect,tmpPaint);
-                            mSurfaceHolder.unlockCanvasAndPost(c);
-                            c = null;
-                             */
 
 
                             for (int i = 0; i < mCanvasWidth; i++)
                         	{
-                        		drawValue(i);
+                        		drawValue(i, c);
                         	}
+                            mSurfaceHolder.unlockCanvasAndPost(c);
+                            c = null;
                     		justReset = false;
                      	}
                     	quickSortPriority();
                     }
-                } catch (NullPointerException nullPtr) {
-                    if (c != null) {
-                        mSurfaceHolder.unlockCanvasAndPost(c);
-                        c = null;
-                    }
-
-
+                } catch (NullPointerException ignored) {
                 } finally {
                     // do this in a finally so that if an exception is thrown
                     // during the above, we don't leave the Surface in an
@@ -159,22 +145,28 @@ class SortingChaosView extends SurfaceView implements SurfaceHolder.Callback {
         	temp = values[pos1];
         	values[pos1] = values[pos2];
         	values[pos2] = temp;
-        	
-        	drawValue(pos1);
-        	drawValue(pos2);
+        	drawValue(pos1, null);
+        	drawValue(pos2, null);
 
         }
-        private void drawValue(int pos1) {
-            Canvas useCanvas = null;
+        private void drawValue(int pos1, Canvas c) {
+            Boolean madeCanvas = false;
+            Canvas useCanvas = c;
+
+            if (useCanvas == null) {
                 Rect littleRect = new Rect(2 * pos1, 0, 2 * pos1 + 1, mCanvasHeight);
                 useCanvas = mSurfaceHolder.lockCanvas(littleRect);
+                madeCanvas = true;
+            }
 
                 Rect bottomRect = new Rect(2 * pos1, 0, 2 * pos1 + 1, values[pos1]);
                 useCanvas.drawRect(bottomRect, backgroundPaint);
                 Rect topRect = new Rect(2 * pos1, values[pos1], 2 * pos1 + 1, mCanvasHeight);
                 useCanvas.drawRect(topRect, foregroundPaint);
 
+            if (madeCanvas) {
                 mSurfaceHolder.unlockCanvasAndPost(useCanvas);
+            }
 
         }
         
