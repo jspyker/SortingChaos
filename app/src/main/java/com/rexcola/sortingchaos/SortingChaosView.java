@@ -26,7 +26,6 @@ class SortingChaosView extends SurfaceView implements SurfaceHolder.Callback {
                 Handler handler) {
             // get handles to some important objects
             mSurfaceHolder = surfaceHolder;
-            mHandler = handler;
 
         }
 
@@ -95,33 +94,32 @@ class SortingChaosView extends SurfaceView implements SurfaceHolder.Callback {
                     	{
                     		// Don't understand why, but on my phone it is crucial to do a bit of drawing
                     		// first or else the first background doesn't work
-                    		if (firstTime)
-                    		{
-                    			c = null;
-                    			drawValue(0,c);
-                    			firstTime = false;
-                    		}
-
+                            /*
                     		c = mSurfaceHolder.lockCanvas();
                     		Rect littleRect = new Rect(0,0,mCanvasWidth,mCanvasHeight);
                     		Paint tmpPaint = new Paint();
                     		tmpPaint.setColor(Color.BLACK);
                     		c.drawRect(littleRect,tmpPaint);
+                            mSurfaceHolder.unlockCanvasAndPost(c);
+                            c = null;
+                             */
 
 
-                        	for (int i = 0; i < mCanvasWidth; i++)
+                            for (int i = 0; i < mCanvasWidth; i++)
                         	{
-                        		drawValue(i,c);
+                        		drawValue(i);
                         	}
                     		justReset = false;
-                    		if (c!= null)
-                    		{
-                    			mSurfaceHolder.unlockCanvasAndPost(c);
-                    			c = null;
-                    		}
-                    	}                    	
-                    	quickSortPriority(c);
+                     	}
+                    	quickSortPriority();
                     }
+                } catch (NullPointerException nullPtr) {
+                    if (c != null) {
+                        mSurfaceHolder.unlockCanvasAndPost(c);
+                        c = null;
+                    }
+
+
                 } finally {
                     // do this in a finally so that if an exception is thrown
                     // during the above, we don't leave the Surface in an
@@ -154,67 +152,33 @@ class SortingChaosView extends SurfaceView implements SurfaceHolder.Callback {
             }
         }
 
-//        void doTouch(MotionEvent motion)
-//        {
-//            synchronized (syncObject) {
-//                	mX = motion.getX(motion.getPointerCount()-1);
-//                	mY = motion.getY(motion.getPointerCount()-1);
-//            }
-//        	
-//        }
 
-
-        private void swapValues(int pos1, int pos2, Canvas c)
+        private void swapValues(int pos1, int pos2)
         {
         	Integer temp;
         	temp = values[pos1];
         	values[pos1] = values[pos2];
         	values[pos2] = temp;
         	
-        	drawValue(pos1,c);
-        	drawValue(pos2, c);
+        	drawValue(pos1);
+        	drawValue(pos2);
 
         }
-        private void drawValue(int pos1, Canvas c)
-        {
-        	boolean madeOwnCanvas = (c == null);
-        	Canvas useCanvas;
-        	
-        	if (madeOwnCanvas)
-        	{
-        		Rect littleRect = new Rect(2*pos1,0,2*pos1+1,mCanvasHeight);
+        private void drawValue(int pos1) {
+            Canvas useCanvas = null;
+                Rect littleRect = new Rect(2 * pos1, 0, 2 * pos1 + 1, mCanvasHeight);
                 useCanvas = mSurfaceHolder.lockCanvas(littleRect);
-        		if (useCanvas != null)
-        		{
-//        			useCanvas.drawRect(littleRect,backgroundPaint);
-        		}
-        	}
-        	else
-        	{
-        		useCanvas = c;
-        	}
 
+                Rect bottomRect = new Rect(2 * pos1, 0, 2 * pos1 + 1, values[pos1]);
+                useCanvas.drawRect(bottomRect, backgroundPaint);
+                Rect topRect = new Rect(2 * pos1, values[pos1], 2 * pos1 + 1, mCanvasHeight);
+                useCanvas.drawRect(topRect, foregroundPaint);
 
-        	if (useCanvas != null)
-        	{
-        		int i1 = mCanvasHeight/2;
-        		int i2 = values[pos1]/2;
+                mSurfaceHolder.unlockCanvasAndPost(useCanvas);
 
-//                useCanvas.drawLine(pos1,  values[pos1], pos1, 0,foregroundPaint);
-//                useCanvas.drawLine(pos1,  mCanvasHeight, pos1, values[pos1],backgroundPaint);
-                Rect bottomRect = new Rect(2*pos1,0,2*pos1+1,values[pos1]);
-                useCanvas.drawRect(bottomRect,backgroundPaint);
-                Rect topRect = new Rect(2*pos1,values[pos1],2*pos1+1,mCanvasHeight);
-                useCanvas.drawRect(topRect,foregroundPaint);
-            }
-
-        	if (madeOwnCanvas && useCanvas != null)
-        	{
-        		mSurfaceHolder.unlockCanvasAndPost(useCanvas);
-        	}
         }
         
-        private void singleSortStep(Canvas c)
+        private void singleSortStep()
         {
         	if (highwater > 1)
         	{
@@ -227,7 +191,7 @@ class SortingChaosView extends SurfaceView implements SurfaceHolder.Callback {
         		{
         			if (values[curPos] > values [curPos+1])
         			{
-        				swapValues(curPos,curPos+1, c);        				
+        				swapValues(curPos,curPos+1);
         			}
         			curPos++;
         		}
@@ -298,7 +262,7 @@ class SortingChaosView extends SurfaceView implements SurfaceHolder.Callback {
             doingPartition = false;
         	
         }
-        private void quickSortPriority(Canvas c)
+        private void quickSortPriority()
         {
         	if (doingPartition)
         	{
@@ -311,7 +275,7 @@ class SortingChaosView extends SurfaceView implements SurfaceHolder.Callback {
 
                 if (low < high)
                 {
-                    swapValues(low, high, c);
+                    swapValues(low, high);
                 }
                 else
                 {
@@ -354,11 +318,11 @@ class SortingChaosView extends SurfaceView implements SurfaceHolder.Callback {
         	high = r+1;
         	doingPartition = true;
         }
-        private void quickSortQueue(int p, int r, Canvas c)
+        private void quickSortQueue(int p, int r)
         {
         	if (p<r)
         	{
-        		int q = partition(p,r,c);
+        		int q = partition(p,r);
         		addToQueue(p,q);
         		addToQueue(q+1,r);
         	}
@@ -379,7 +343,7 @@ class SortingChaosView extends SurfaceView implements SurfaceHolder.Callback {
         	}
         }
 
-        private void quickSortRandom(int p, int r, Canvas c)
+        private void quickSortRandom(int p, int r)
         {
         	sortList = new ArrayList<sortRange>();
         	
@@ -389,43 +353,43 @@ class SortingChaosView extends SurfaceView implements SurfaceHolder.Callback {
         		int item = myRandomizer.nextInt(sortList.size());
         		sortRange thisRange = sortList.get(item);
         		sortList.remove(item);
-        		quickSortRange(thisRange.start,thisRange.end, c);
+        		quickSortRange(thisRange.start,thisRange.end);
         		
         	}
         	
         }
-        private void quickSortRange(int p, int r, Canvas c)
+        private void quickSortRange(int p, int r)
         {
         	if (p<r)
         	{
-        		int q = partition(p,r,c);
+        		int q = partition(p,r);
         		sortList.add(new sortRange(p,q));
         		sortList.add(new sortRange(q+1,r));
         		
         	}
         }
-        private void quickSort(int p, int r, Canvas c)
+        private void quickSort(int p, int r)
         {
             if(p<r)
             {
-                int q=partition(p,r, c);
+                int q=partition(p,r);
                 //if ( (q-p) > (r - q))
                 if (myRandomizer.nextInt(1000) > 500)
                 //if (p > (mCanvasWidth -r))
                 //if (q > mCanvasWidth/2)
                 {
-                	quickSort(p,q, c);
-                	quickSort(q+1,r, c);
+                	quickSort(p,q);
+                	quickSort(q+1,r);
                 }
                 else
                 {
-                	quickSort(q+1,r, c);
-                	quickSort(p,q, c);
+                	quickSort(q+1,r);
+                	quickSort(p,q);
                 }
             }
         }
         
-        private void quickSort2(int startPos, int endPos, Canvas c)
+        private void quickSort2(int startPos, int endPos)
         {
         	if (startPos >= endPos)
         	{
@@ -439,7 +403,7 @@ class SortingChaosView extends SurfaceView implements SurfaceHolder.Callback {
         	{
         		if (values[pos1] >= values[pos2])
         		{
-        			swapValues(pos1,pos2,c);
+        			swapValues(pos1,pos2);
         			pos1++;
         		}
         		else
@@ -448,11 +412,11 @@ class SortingChaosView extends SurfaceView implements SurfaceHolder.Callback {
         		}
         		
         	}
-        	quickSort2(startPos, pos1 - 1,c);
-        	quickSort2(pos1 + 1, endPos, c);
+        	quickSort2(startPos, pos1 - 1);
+        	quickSort2(pos1 + 1, endPos);
         }
         
-        private int partition(int p, int r, Canvas c) {
+        private int partition(int p, int r) {
 
             int x = values[p];
             int i = p-1 ;
@@ -467,7 +431,7 @@ class SortingChaosView extends SurfaceView implements SurfaceHolder.Callback {
                     j--;
 
                 if (i < j)
-                    swapValues(i, j, c);
+                    swapValues(i, j);
                 else
                     return j;
             }
@@ -480,7 +444,6 @@ class SortingChaosView extends SurfaceView implements SurfaceHolder.Callback {
     private int highwater;
     private int curPos;
     boolean justReset;
-    boolean firstTime = true;
 
     /** The thread that actually draws the animation */
     private SortingChaosThread thread;
@@ -511,14 +474,6 @@ class SortingChaosView extends SurfaceView implements SurfaceHolder.Callback {
     {
     	return true;
     }
-
-
-//    /**
-//     * Installs a pointer to the text view used for messages.
-//     */
-//    public void setTextView(TextView textView) {
-//        statusText = textView;
-//    }
 
     /* Callback invoked when the surface dimensions change. */
     public void surfaceChanged(SurfaceHolder holder, int format, int width,
@@ -563,11 +518,10 @@ class SortingChaosView extends SurfaceView implements SurfaceHolder.Callback {
 
     private int mCanvasHeight = 1;
     private int mCanvasWidth = 1;
-    private static Handler mHandler;
     private boolean mRun = false;
     private SurfaceHolder mSurfaceHolder;
     
-    private Integer syncObject = 1;
+    private final Integer syncObject = 1;
     
 
 }
